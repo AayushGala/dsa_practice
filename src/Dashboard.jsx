@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { dsaProblems } from './data/problems';
 import CardView from './CardView';
+import { getProblemStatus, setProblemStatus, problemStatus } from './utils/storageUtils';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
@@ -11,6 +12,7 @@ const Dashboard = () => {
   const [isAllExpanded, setIsAllExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [copiedId, setCopiedId] = useState(null);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'card'
 
@@ -68,13 +70,18 @@ const Dashboard = () => {
     });
   };
 
-  // Filter problems based on search and difficulty
+  // Filter problems based on search, difficulty, and status
   const filteredProblems = dsaProblems.map(category => ({
     ...category,
     problems: category.problems.filter(problem => {
       const matchesSearch = problem.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesDifficulty = difficultyFilter === 'All' || problem.difficulty === difficultyFilter;
-      return matchesSearch && matchesDifficulty;
+      let matchesStatus = true;
+      if (statusFilter !== 'All') {
+        const currentStatus = getProblemStatus(category.category, problem.name);
+        matchesStatus = currentStatus === statusFilter;
+      }
+      return matchesSearch && matchesDifficulty && matchesStatus;
     })
   })).filter(category => category.problems.length > 0);
 
@@ -88,6 +95,32 @@ const Dashboard = () => {
         return 'bg-red-500/20 text-red-400 border-red-500/50';
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case problemStatus.COMPLETED:
+        return 'bg-green-500/20 text-green-400';
+      case problemStatus.IN_PROGRESS:
+        return 'bg-yellow-500/20 text-yellow-400';
+      case problemStatus.TO_REVIEW:
+        return 'bg-orange-500/20 text-orange-400';
+      default:
+        return 'bg-gray-500/20 text-gray-400';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case problemStatus.COMPLETED:
+        return '✓ Done';
+      case problemStatus.IN_PROGRESS:
+        return '→ In Progress';
+      case problemStatus.TO_REVIEW:
+        return '🔄 Review';
+      default:
+        return '';
     }
   };
 
@@ -151,6 +184,22 @@ const Dashboard = () => {
             >
               {isAllExpanded ? '▶ Collapse All' : '▼ Expand All'}
             </button>
+          </div>
+          {/* Status Filter */}
+          <div className="flex gap-2 flex-wrap">
+            {['All', problemStatus.TODO, problemStatus.IN_PROGRESS, problemStatus.COMPLETED, problemStatus.TO_REVIEW].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-2 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors min-h-[40px] ${
+                  statusFilter === status
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                {status === 'All' ? '📋 All' : `${status.charAt(0).toUpperCase()}${status.slice(1).toLowerCase()}`}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -219,13 +268,24 @@ const Dashboard = () => {
                                   {problem.name}
                                 </span>
                               </div>
-                              <span
-                                className={`px-2 py-0.5 text-xs rounded border ${getDifficultyColor(
-                                  problem.difficulty
-                                )} inline-block`}
-                              >
-                                {problem.difficulty}
-                              </span>
+                              <div className="flex gap-2 flex-wrap">
+                                <span
+                                  className={`px-2 py-0.5 text-xs rounded border ${getDifficultyColor(
+                                    problem.difficulty
+                                  )} inline-block`}
+                                >
+                                  {problem.difficulty}
+                                </span>
+                                {getProblemStatus(category.category, problem.name) !== problemStatus.TODO && (
+                                  <span
+                                    className={`px-2 py-0.5 text-xs rounded inline-block ${getStatusColor(
+                                      getProblemStatus(category.category, problem.name)
+                                    )}`}
+                                  >
+                                    {getStatusLabel(getProblemStatus(category.category, problem.name))}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </button>
@@ -240,7 +300,64 @@ const Dashboard = () => {
                               </h3>
                             </div>
 
-                            {/* Resources */}
+                            {/* Status Controls */}
+                            <div className="pb-4 border-b border-gray-700">
+                              <p className="text-xs text-gray-400 mb-2">Status:</p>
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => {
+                                    setProblemStatus(category.category, problem.name, problemStatus.TODO);
+                                    setSearchQuery(searchQuery); // Force re-render
+                                  }}
+                                  className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                                    getProblemStatus(category.category, problem.name) === problemStatus.TODO
+                                      ? 'bg-gray-500 text-white'
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                >
+                                  To Do
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setProblemStatus(category.category, problem.name, problemStatus.IN_PROGRESS);
+                                    setSearchQuery(searchQuery);
+                                  }}
+                                  className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                                    getProblemStatus(category.category, problem.name) === problemStatus.IN_PROGRESS
+                                      ? 'bg-yellow-600 text-white'
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                >
+                                  In Progress
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setProblemStatus(category.category, problem.name, problemStatus.COMPLETED);
+                                    setSearchQuery(searchQuery);
+                                  }}
+                                  className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                                    getProblemStatus(category.category, problem.name) === problemStatus.COMPLETED
+                                      ? 'bg-green-600 text-white'
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                >
+                                  ✓ Completed
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setProblemStatus(category.category, problem.name, problemStatus.TO_REVIEW);
+                                    setSearchQuery(searchQuery);
+                                  }}
+                                  className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                                    getProblemStatus(category.category, problem.name) === problemStatus.TO_REVIEW
+                                      ? 'bg-orange-600 text-white'
+                                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                  }`}
+                                >
+                                  🔄 To Review
+                                </button>
+                              </div>
+                            </div>
                             <div className="flex flex-col sm:flex-row gap-3">
                               <a
                                 href={problem.youtubeLink}

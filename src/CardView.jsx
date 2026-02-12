@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
+import { getProblemStatus, setProblemStatus, problemStatus } from './utils/storageUtils';
 
 const CardView = ({ filteredProblems }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -69,15 +70,22 @@ const CardView = ({ filteredProblems }) => {
         categoryName: category.category,
         categoryIndex: catIndex,
         problemIndex: probIndex,
-        categoryKey: category.category, // Use category name as unique key
+        categoryKey: category.category,
       });
     });
   });
 
   // Filter by selected category if one is chosen
-  const displayProblems = selectedCategory !== null
-    ? allProblems.filter(p => p.categoryIndex === selectedCategory)
-    : allProblems;
+  let displayProblems = allProblems;
+  if (selectedCategory === 'to-review') {
+    // Show only problems marked for review
+    displayProblems = allProblems.filter(
+      p => getProblemStatus(p.categoryName, p.name) === problemStatus.TO_REVIEW
+    );
+  } else if (selectedCategory !== null) {
+    // Show problems from selected category
+    displayProblems = allProblems.filter(p => p.categoryIndex === selectedCategory);
+  }
 
   const totalProblems = displayProblems.length;
 
@@ -96,6 +104,12 @@ const CardView = ({ filteredProblems }) => {
       setCopiedId('solution');
       setTimeout(() => setCopiedId(null), 2000);
     });
+  };
+
+  const handleStatusClick = (newStatus) => {
+    setProblemStatus(currentProblem.categoryName, currentProblem.name, newStatus);
+    // Force a re-render by updating state (could also use a callback)
+    setCurrentIndex(currentIndex);
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -159,6 +173,19 @@ const CardView = ({ filteredProblems }) => {
           >
             All
           </button>
+          <button
+            onClick={() => {
+              setSelectedCategory('to-review');
+              setCurrentIndex(0);
+            }}
+            className={`px-3 py-1 text-xs sm:text-sm rounded-full font-medium transition-colors ${
+              selectedCategory === 'to-review'
+                ? 'bg-orange-600 text-white'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+          >
+            🔄 To Review
+          </button>
           {filteredProblems.map((category, idx) => (
             <button
               key={idx}
@@ -207,6 +234,53 @@ const CardView = ({ filteredProblems }) => {
             >
               {currentProblem.difficulty}
             </span>
+          </div>
+
+          {/* Status Controls */}
+          <div className="mb-6 pb-4 border-b border-gray-700">
+            <p className="text-xs text-gray-400 mb-2">Status:</p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => handleStatusClick(problemStatus.TODO)}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.TODO
+                    ? 'bg-gray-500 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                To Do
+              </button>
+              <button
+                onClick={() => handleStatusClick(problemStatus.IN_PROGRESS)}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.IN_PROGRESS
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                In Progress
+              </button>
+              <button
+                onClick={() => handleStatusClick(problemStatus.COMPLETED)}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.COMPLETED
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                ✓ Completed
+              </button>
+              <button
+                onClick={() => handleStatusClick(problemStatus.TO_REVIEW)}
+                className={`px-3 py-1.5 text-xs rounded transition-colors ${
+                  getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.TO_REVIEW
+                    ? 'bg-orange-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                🔄 To Review
+              </button>
+            </div>
           </div>
 
           {/* Resources */}
