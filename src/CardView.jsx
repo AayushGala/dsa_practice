@@ -414,7 +414,7 @@ const CardView = forwardRef(({ filteredProblems }, ref) => {
                 </>
               )}
             </button>
-            <div className="code-block rounded-lg overflow-x-auto">
+            <div className="code-block rounded-lg overflow-x-auto border border-gray-700/50" style={{ boxShadow: '0 4px 20px rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.08)' }}>
               <pre className="language-python">
                 <code className="language-python">
                   {currentProblem.pythonSolution}

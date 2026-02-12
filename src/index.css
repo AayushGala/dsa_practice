@@ -35,10 +35,17 @@
 
 /* Syntax Highlighting Styles */
 .code-block {
-  background-color: rgb(17 24 39);
+  background-color: rgb(15 15 18) !important;
   border-radius: 0.5rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+.code-block pre,
+.code-block pre[class*="language-"] {
+  background-color: rgb(15 15 18) !important;
+  padding: 1rem;
+  margin: 0;
 }
 
 pre {
