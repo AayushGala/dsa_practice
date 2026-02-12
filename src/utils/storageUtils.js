@@ -80,6 +80,60 @@ export const getCardPosition = () => {
 export const setCardPosition = (currentIndex, selectedCategory) => {
   localStorage.setItem(CARD_POSITION_KEY, JSON.stringify({ currentIndex, selectedCategory }));
 };
+
+// List view state storage
+const LIST_STATE_KEY = 'dsa_tracker_list_state';
+
+// Get saved list view state
+export const getListState = () => {
+  const saved = localStorage.getItem(LIST_STATE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      return {
+        expandedCategories: new Set(parsed.expandedCategories || []),
+        expandedProblems: new Set(parsed.expandedProblems || [])
+      };
+    } catch (e) {
+      return { expandedCategories: new Set(), expandedProblems: new Set() };
+    }
+  }
+  return { expandedCategories: new Set(), expandedProblems: new Set() };
+};
+
+// Set list view state
+export const setListState = (expandedCategories, expandedProblems) => {
+  localStorage.setItem(LIST_STATE_KEY, JSON.stringify({
+    expandedCategories: Array.from(expandedCategories),
+    expandedProblems: Array.from(expandedProblems)
+  }));
+};
+
+// Current problem tracking (for syncing between views)
+const CURRENT_PROBLEM_KEY = 'dsa_tracker_current_problem';
+
+// Get current problem
+export const getCurrentProblem = () => {
+  const saved = localStorage.getItem(CURRENT_PROBLEM_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+// Set current problem
+export const setCurrentProblem = (categoryName, problemName, categoryIndex, problemIndex) => {
+  localStorage.setItem(CURRENT_PROBLEM_KEY, JSON.stringify({ 
+    categoryName, 
+    problemName,
+    categoryIndex,
+    problemIndex
+  }));
+};
 export const getAllProblemStatuses = (dsaProblems) => {
   const statuses = {};
   dsaProblems.forEach((category) => {

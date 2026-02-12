@@ -1,23 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { dsaProblems } from './data/problems';
 import CardView from './CardView';
-import { getProblemStatus, setProblemStatus, problemStatus, getViewMode, setViewMode } from './utils/storageUtils';
+import { getProblemStatus, setProblemStatus, problemStatus, getViewMode, setViewMode, getListState, setListState, getCurrentProblem, setCurrentProblem } from './utils/storageUtils';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
 
 const Dashboard = () => {
-  const [expandedCategories, setExpandedCategories] = useState(new Set());
-  const [expandedProblems, setExpandedProblems] = useState(new Set());
+  const savedListState = getListState();
+  const [expandedCategories, setExpandedCategories] = useState(savedListState.expandedCategories);
+  const [expandedProblems, setExpandedProblems] = useState(savedListState.expandedProblems);
   const [isAllExpanded, setIsAllExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [copiedId, setCopiedId] = useState(null);
   const [viewMode, setViewModeState] = useState(() => getViewMode()); // 'list' or 'card'
+  const [pendingCardNavigation, setPendingCardNavigation] = useState(null);
+  const cardViewRef = useRef(null);
 
   // Save view mode to localStorage whenever it changes
   const handleViewModeChange = (mode) => {
+    const previousMode = viewMode;
+    
+    // Sync between views
+    if (mode === 'list' && previousMode === 'card') {
+      // Switching from card to list - expand the current card's problem
+      const currentProblem = getCurrentProblem();
+      if (currentProblem) {
+        const newExpandedCategories = new Set(expandedCategories);
+        const newExpandedProblems = new Set(expandedProblems);
+        newExpandedCategories.add(currentProblem.categoryIndex);
+        newExpandedProblems.add(`${currentProblem.categoryIndex}-${currentProblem.problemIndex}`);
+        setExpandedCategories(newExpandedCategories);
+        setExpandedProblems(newExpandedProblems);
+        
+        // Scroll to the problem after a brief delay
+        setTimeout(() => {
+          const element = document.getElementById(`problem-${currentProblem.categoryIndex}-${currentProblem.problemIndex}`);
+          if (element) {
+            const headerHeight = document.querySelector('header')?.offsetHeight || 0;
+            const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+            const offsetPosition = elementPosition - headerHeight;
+            
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
+      }
+    } else if (mode === 'card' && previousMode === 'list') {
+      // Scroll to top instantly before switching to card view
+      window.scrollTo({ top: 0 });
+      
+      // Set pending navigation - will be handled after CardView mounts
+      const currentProblem = getCurrentProblem();
+      if (currentProblem) {
+        setPendingCardNavigation(currentProblem);
+      }
+    }
+    
     setViewModeState(mode);
     setViewMode(mode);
   };
@@ -25,6 +68,22 @@ const Dashboard = () => {
   useEffect(() => {
     Prism.highlightAll();
   }, [expandedProblems]);
+
+  // Save list view state whenever it changes
+  useEffect(() => {
+    setListState(expandedCategories, expandedProblems);
+  }, [expandedCategories, expandedProblems]);
+
+  // Handle pending card navigation after view switch
+  useEffect(() => {
+    if (viewMode === 'card' && pendingCardNavigation && cardViewRef.current) {
+      cardViewRef.current.navigateToProblem(
+        pendingCardNavigation.categoryName,
+        pendingCardNavigation.problemName
+      );
+      setPendingCardNavigation(null);
+    }
+  }, [viewMode, pendingCardNavigation]);
 
   const toggleCategory = (categoryIndex) => {
     const newExpanded = new Set(expandedCategories);
@@ -36,12 +95,14 @@ const Dashboard = () => {
     setExpandedCategories(newExpanded);
   };
 
-  const toggleProblem = (problemId) => {
+  const toggleProblem = (problemId, categoryIndex, problemIndex, categoryName, problemName) => {
     const newExpanded = new Set(expandedProblems);
     if (newExpanded.has(problemId)) {
       newExpanded.delete(problemId);
     } else {
       newExpanded.add(problemId);
+      // Track this as the current problem when expanding
+      setCurrentProblem(categoryName, problemName, categoryIndex, problemIndex);
     }
     setExpandedProblems(newExpanded);
   };
@@ -94,11 +155,11 @@ const Dashboard = () => {
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy':
-        return 'bg-green-500/20 text-green-400 border-green-500/50';
+        return 'bg-gray-600/20 text-gray-300 border-gray-600/50';
       case 'Medium':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+        return 'bg-gray-500/20 text-gray-200 border-gray-500/50';
       case 'Hard':
-        return 'bg-red-500/20 text-red-400 border-red-500/50';
+        return 'bg-gray-400/20 text-gray-100 border-gray-400/50';
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
     }
@@ -167,7 +228,7 @@ const Dashboard = () => {
 
       {/* Card View */}
       {viewMode === 'card' && (
-        <CardView filteredProblems={filteredProblems} />
+        <CardView ref={cardViewRef} filteredProblems={filteredProblems} />
       )}
 
       {/* List View */}
@@ -265,11 +326,12 @@ const Dashboard = () => {
                     return (
                       <div
                         key={problemIndex}
+                        id={`problem-${categoryIndex}-${problemIndex}`}
                         className="border-b border-gray-700/30 last:border-b-0 transition-all hover:bg-gray-800/20"
                       >
                         {/* Problem Header */}
                         <button
-                          onClick={() => toggleProblem(problemId)}
+                          onClick={() => toggleProblem(problemId, categoryIndex, problemIndex, category.category, problem.name)}
                           className="w-full px-4 sm:px-6 py-4 text-left transition-all duration-200 ease-out min-h-[56px] flex items-center group"
                         >
                           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -351,23 +413,23 @@ const Dashboard = () => {
                                 href={problem.youtubeLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm"
+                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm"
                               >
                                 <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                 </svg>
-                                <span>YouTube Tutorial</span>
+                                <span>YouTube</span>
                               </a>
                               <a
                                 href={problem.leetcodeLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm"
+                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm"
                               >
-                                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
+                                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                                 </svg>
-                                <span>LeetCode</span>
+                                <span>Practice</span>
                               </a>
                             </div>
 
