@@ -7,6 +7,7 @@ import 'prismjs/components/prism-python';
 const Dashboard = () => {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [expandedProblems, setExpandedProblems] = useState(new Set());
+  const [isAllExpanded, setIsAllExpanded] = useState(false);
 
   useEffect(() => {
     Prism.highlightAll();
@@ -30,6 +31,29 @@ const Dashboard = () => {
       newExpanded.add(problemId);
     }
     setExpandedProblems(newExpanded);
+  };
+
+  const toggleExpandAll = () => {
+    if (isAllExpanded) {
+      // Collapse all
+      setExpandedCategories(new Set());
+      setExpandedProblems(new Set());
+      setIsAllExpanded(false);
+    } else {
+      // Expand all categories
+      const allCategories = new Set(dsaProblems.map((_, index) => index));
+      setExpandedCategories(allCategories);
+      
+      // Expand all problems
+      const allProblems = new Set();
+      dsaProblems.forEach((category, catIndex) => {
+        category.problems.forEach((_, probIndex) => {
+          allProblems.add(`${catIndex}-${probIndex}`);
+        });
+      });
+      setExpandedProblems(allProblems);
+      setIsAllExpanded(true);
+    }
   };
 
   const getDifficultyColor = (difficulty) => {
@@ -60,6 +84,16 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Expand/Collapse Toggle */}
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={toggleExpandAll}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+          >
+            {isAllExpanded ? '▶ Collapse All' : '▼ Expand All'}
+          </button>
+        </div>
+
         <div className="space-y-4">
           {dsaProblems.map((category, categoryIndex) => (
             <div
