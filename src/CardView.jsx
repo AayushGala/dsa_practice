@@ -44,12 +44,38 @@ const CardView = ({ filteredProblems }) => {
   };
 
   const handleTouchStart = (e) => {
+    // Don't track swipes on interactive elements
+    const target = e.target;
+    if (target.tagName === 'A' || target.tagName === 'BUTTON' || target.closest('button') || target.closest('a')) {
+      return;
+    }
     setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(e.targetTouches[0].clientX); // Set initial end position same as start
+  };
+
+  const handleTouchMove = (e) => {
+    if (touchStart === 0) return;
+    setTouchEnd(e.targetTouches[0].clientX);
   };
 
   const handleTouchEnd = (e) => {
-    setTouchEnd(e.changedTouches[0].clientX);
-    handleSwipe();
+    if (touchStart === 0) return;
+    const finalX = e.changedTouches[0].clientX;
+    const distance = touchStart - finalX;
+    const minSwipeDistance = 75;
+    
+    // Only navigate if it's a deliberate swipe
+    if (Math.abs(distance) >= minSwipeDistance) {
+      if (distance > 0) {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
+    }
+    
+    // Reset state
+    setTouchStart(0);
+    setTouchEnd(0);
   };
 
   const handleProgressClick = (e) => {
@@ -88,16 +114,7 @@ const CardView = ({ filteredProblems }) => {
   }
 
   const totalProblems = displayProblems.length;
-
-  if (totalProblems === 0) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <p className="text-gray-400 text-lg">No problems found matching your criteria.</p>
-      </div>
-    );
-  }
-
-  const currentProblem = displayProblems[Math.min(currentIndex, displayProblems.length - 1)];
+  const currentProblem = totalProblems > 0 ? displayProblems[Math.min(currentIndex, displayProblems.length - 1)] : null;
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code).then(() => {
@@ -115,11 +132,11 @@ const CardView = ({ filteredProblems }) => {
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
       case 'Easy':
-        return 'bg-green-500/20 text-green-400 border-green-500/50';
+        return 'bg-gray-600/20 text-gray-300 border-gray-600/50';
       case 'Medium':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50';
+        return 'bg-gray-500/20 text-gray-200 border-gray-500/50';
       case 'Hard':
-        return 'bg-red-500/20 text-red-400 border-red-500/50';
+        return 'bg-gray-400/20 text-gray-100 border-gray-400/50';
       default:
         return 'bg-gray-500/20 text-gray-400 border-gray-500/50';
     }
@@ -129,6 +146,7 @@ const CardView = ({ filteredProblems }) => {
     <div
       ref={containerRef}
       onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       className="min-h-screen flex items-center justify-center px-4 py-8"
       style={{ backgroundColor: 'var(--color-dark-bg)' }}
@@ -137,15 +155,15 @@ const CardView = ({ filteredProblems }) => {
         {/* Progress Indicator */}
         <div className="mb-4 flex items-center justify-between">
           <span className="text-gray-400 text-sm">
-            Problem {currentIndex + 1} of {totalProblems}
+            Problem {totalProblems === 0 ? 0 : currentIndex + 1} of {totalProblems}
           </span>
           <div 
             onClick={handleProgressClick}
             className="flex-1 mx-3 h-2 bg-gray-700 rounded-full overflow-hidden cursor-pointer hover:h-2.5 transition-all"
           >
             <div
-              className="h-full bg-blue-600 transition-all duration-300"
-              style={{ width: `${((currentIndex + 1) / totalProblems) * 100}%` }}
+              className="h-full bg-gray-400 transition-all duration-300"
+              style={{ width: `${totalProblems === 0 ? 0 : ((currentIndex + 1) / totalProblems) * 100}%` }}
             />
           </div>
           <button
@@ -167,8 +185,8 @@ const CardView = ({ filteredProblems }) => {
             }}
             className={`px-3 py-1 text-xs sm:text-sm rounded-full font-medium transition-colors ${
               selectedCategory === null
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-white text-black'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'
             }`}
           >
             All
@@ -180,8 +198,8 @@ const CardView = ({ filteredProblems }) => {
             }}
             className={`px-3 py-1 text-xs sm:text-sm rounded-full font-medium transition-colors ${
               selectedCategory === 'to-review'
-                ? 'bg-orange-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-white text-black'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'
             }`}
           >
             🔄 To Review
@@ -195,8 +213,8 @@ const CardView = ({ filteredProblems }) => {
               }}
               className={`px-3 py-1 text-xs sm:text-sm rounded-full font-medium transition-colors whitespace-nowrap ${
                 selectedCategory === idx
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? 'bg-white text-black'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 border border-gray-700'
               }`}
             >
               {category.category}
@@ -210,6 +228,12 @@ const CardView = ({ filteredProblems }) => {
           style={{ backgroundColor: 'var(--color-dark-card)', borderColor: 'var(--color-dark-border)' }}
           className="border rounded-lg p-6 sm:p-8 min-h-[80vh] flex flex-col"
         >
+          {totalProblems === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-gray-400 text-lg">No problems found matching your criteria.</p>
+            </div>
+          ) : (
+            <>
           {/* Category and Index */}
           <div className="mb-4 flex items-center justify-between">
             <span className="text-sm text-gray-400">
@@ -244,7 +268,7 @@ const CardView = ({ filteredProblems }) => {
                 onClick={() => handleStatusClick(problemStatus.TODO)}
                 className={`px-3 py-1.5 text-xs rounded transition-colors ${
                   getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.TODO
-                    ? 'bg-gray-500 text-white'
+                    ? 'bg-gray-600 text-white'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
@@ -254,7 +278,7 @@ const CardView = ({ filteredProblems }) => {
                 onClick={() => handleStatusClick(problemStatus.IN_PROGRESS)}
                 className={`px-3 py-1.5 text-xs rounded transition-colors ${
                   getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.IN_PROGRESS
-                    ? 'bg-yellow-600 text-white'
+                    ? 'bg-gray-500 text-white'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
@@ -264,7 +288,7 @@ const CardView = ({ filteredProblems }) => {
                 onClick={() => handleStatusClick(problemStatus.COMPLETED)}
                 className={`px-3 py-1.5 text-xs rounded transition-colors ${
                   getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.COMPLETED
-                    ? 'bg-green-600 text-white'
+                    ? 'bg-gray-400 text-black'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
@@ -274,7 +298,7 @@ const CardView = ({ filteredProblems }) => {
                 onClick={() => handleStatusClick(problemStatus.TO_REVIEW)}
                 className={`px-3 py-1.5 text-xs rounded transition-colors ${
                   getProblemStatus(currentProblem.categoryName, currentProblem.name) === problemStatus.TO_REVIEW
-                    ? 'bg-orange-600 text-white'
+                    ? 'bg-gray-300 text-black'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
@@ -289,7 +313,7 @@ const CardView = ({ filteredProblems }) => {
               href={currentProblem.youtubeLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center p-2 sm:px-4 sm:py-3 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white rounded-lg transition-colors font-medium"
+              className="flex items-center justify-center p-2 sm:px-4 sm:py-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white rounded-lg transition-all font-medium shadow-lg"
               title="YouTube Tutorial"
             >
               <svg
@@ -305,7 +329,7 @@ const CardView = ({ filteredProblems }) => {
               href={currentProblem.leetcodeLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center p-2 sm:px-4 sm:py-3 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white rounded-lg transition-colors font-medium"
+              className="flex items-center justify-center p-2 sm:px-4 sm:py-3 bg-gray-600 hover:bg-gray-500 active:bg-gray-400 text-white rounded-lg transition-all font-medium shadow-lg"
               title="LeetCode Problem"
             >
               <svg
@@ -324,7 +348,7 @@ const CardView = ({ filteredProblems }) => {
             <div className="flex items-center gap-2">
               <h4 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
                 <svg
-                  className="w-5 h-5 text-blue-400 flex-shrink-0"
+                  className="w-5 h-5 text-gray-400 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -390,6 +414,8 @@ const CardView = ({ filteredProblems }) => {
           <div className="text-center mt-4 text-xs text-gray-500 md:hidden">
             Swipe left/right or use arrow keys to navigate
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>

@@ -129,8 +129,8 @@ const Dashboard = () => {
       {/* Header */}
       <header 
         style={{ 
-          backgroundColor: 'rgba(30, 30, 30, 0.95)',
-          borderBottomColor: 'rgba(99, 102, 241, 0.1)',
+          backgroundColor: 'rgba(10, 10, 10, 0.95)',
+          borderBottomColor: 'rgba(58, 58, 58, 0.3)',
           backdropFilter: 'blur(10px)'
         }} 
         className="border-b sticky top-0 z-10"
@@ -138,7 +138,7 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+              <div className="p-2 rounded-xl bg-gray-700 text-white">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
                 </svg>
@@ -170,22 +170,20 @@ const Dashboard = () => {
         {/* Search and Filter Bar */}
         <div className="mb-8 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">🔍 Search Problems</label>
             <input
               type="text"
               placeholder="Search by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 text-base bg-gray-800/50 text-white border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder-gray-500"
+              className="w-full px-4 py-3 text-base bg-gray-800/50 text-white border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all placeholder-gray-500"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-2">📊 Difficulty Level</label>
               <select
                 value={difficultyFilter}
                 onChange={(e) => setDifficultyFilter(e.target.value)}
-                className="w-full px-4 py-3 text-base bg-gray-800/50 text-white border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 text-base bg-gray-800/50 text-white border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all"
               >
                 <option value="All">All Levels</option>
                 <option value="Easy">Easy</option>
@@ -204,7 +202,6 @@ const Dashboard = () => {
           </div>
           {/* Status Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">✅ Filter by Status</label>
             <div className="flex gap-2 flex-wrap">
               {['All', problemStatus.TODO, problemStatus.IN_PROGRESS, problemStatus.COMPLETED, problemStatus.TO_REVIEW].map((status) => (
                 <button
@@ -212,7 +209,7 @@ const Dashboard = () => {
                   onClick={() => setStatusFilter(status)}
                   className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                     statusFilter === status
-                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-lg'
+                      ? 'bg-gray-600 text-white shadow-lg'
                       : 'bg-gray-800/50 text-gray-300 border border-gray-700 hover:bg-gray-800 hover:border-gray-600'
                   }`}
                 >
@@ -246,7 +243,7 @@ const Dashboard = () => {
                   <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                     {category.category}
                   </h2>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-600/30 text-gray-300 border border-gray-600/40">
                     {category.problems.length}
                   </span>
                 </div>
@@ -278,7 +275,7 @@ const Dashboard = () => {
                                 <span className="text-gray-500 font-mono text-xs font-semibold flex-shrink-0 bg-gray-800 px-2 py-1 rounded">
                                   #{problemIndex + 1}
                                 </span>
-                                <span className="text-white font-semibold text-sm sm:text-base group-hover:text-indigo-300 transition-colors">
+                                <span className="text-white font-semibold text-sm sm:text-base group-hover:text-gray-300 transition-colors">
                                   {problem.name}
                                 </span>
                               </div>
@@ -372,14 +369,14 @@ const Dashboard = () => {
                             <div className="space-y-3">
                               <div>
                                 <h4 className="text-lg font-bold text-white flex items-center gap-2 mb-3">
-                                  <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                                   </svg>
                                   Python Solution
                                 </h4>
                                 <button
                                   onClick={() => copyCode(problem.pythonSolution, problemId)}
-                                  className="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold transition-all hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                  className="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
                                 >
                                   {copiedId === problemId ? (
                                     <>
@@ -432,7 +429,7 @@ const Dashboard = () => {
               href="https://takeuforward.org/dsa/strivers-a2z-sheet-learn-dsa-a-to-z"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 transition-colors"
+              className="text-gray-400 hover:text-gray-300 transition-colors"
             >
               Striver's A2Z DSA Sheet
             </a>
