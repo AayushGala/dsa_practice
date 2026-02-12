@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { dsaProblems } from './data/problems';
+import CardView from './CardView';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
@@ -11,6 +12,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   const [copiedId, setCopiedId] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'card'
 
   useEffect(() => {
     Prism.highlightAll();
@@ -97,12 +99,29 @@ const Dashboard = () => {
         className="border-b sticky top-0 z-10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">DSA Tracker</h1>
-          <p className="text-xs sm:text-base text-gray-400 mt-1 sm:mt-2">Master Data Structures & Algorithms - A to Z</p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">DSA Tracker</h1>
+              <p className="text-xs sm:text-base text-gray-400 mt-1 sm:mt-2">Master Data Structures & Algorithms - A to Z</p>
+            </div>
+            <button
+              onClick={() => setViewMode(viewMode === 'list' ? 'card' : 'list')}
+              className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white rounded-lg transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+              title={viewMode === 'list' ? 'Switch to Card View' : 'Switch to List View'}
+            >
+              {viewMode === 'list' ? '🃏 Card' : '📋 List'}
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Card View */}
+      {viewMode === 'card' && (
+        <CardView filteredProblems={filteredProblems} />
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Search and Filter Bar */}
         <div className="mb-4 sm:mb-6 flex flex-col gap-3">
@@ -315,6 +334,7 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+      )}
 
       {/* Footer */}
       <footer 
