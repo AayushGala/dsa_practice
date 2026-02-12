@@ -8,6 +8,9 @@ const Dashboard = () => {
   const [expandedCategories, setExpandedCategories] = useState(new Set());
   const [expandedProblems, setExpandedProblems] = useState(new Set());
   const [isAllExpanded, setIsAllExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState('All');
+  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     Prism.highlightAll();
@@ -41,12 +44,12 @@ const Dashboard = () => {
       setIsAllExpanded(false);
     } else {
       // Expand all categories
-      const allCategories = new Set(dsaProblems.map((_, index) => index));
+      const allCategories = new Set(filteredProblems.map((_, index) => index));
       setExpandedCategories(allCategories);
       
       // Expand all problems
       const allProblems = new Set();
-      dsaProblems.forEach((category, catIndex) => {
+      filteredProblems.forEach((category, catIndex) => {
         category.problems.forEach((_, probIndex) => {
           allProblems.add(`${catIndex}-${probIndex}`);
         });
@@ -55,6 +58,23 @@ const Dashboard = () => {
       setIsAllExpanded(true);
     }
   };
+
+  const copyCode = (code, problemId) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedId(problemId);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  };
+
+  // Filter problems based on search and difficulty
+  const filteredProblems = dsaProblems.map(category => ({
+    ...category,
+    problems: category.problems.filter(problem => {
+      const matchesSearch = problem.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesDifficulty = difficultyFilter === 'All' || problem.difficulty === difficultyFilter;
+      return matchesSearch && matchesDifficulty;
+    })
+  })).filter(category => category.problems.length > 0);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -84,18 +104,44 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Expand/Collapse Toggle */}
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={toggleExpandAll}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
-          >
-            {isAllExpanded ? '▶ Collapse All' : '▼ Expand All'}
-          </button>
+        {/* Search and Filter Bar */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Search problems..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex gap-3">
+            <select
+              value={difficultyFilter}
+              onChange={(e) => setDifficultyFilter(e.target.value)}
+              className="px-4 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="All">All Difficulty</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+            <button
+              onClick={toggleExpandAll}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium whitespace-nowrap"
+            >
+              {isAllExpanded ? '▶ Collapse All' : '▼ Expand All'}
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">
-          {dsaProblems.map((category, categoryIndex) => (
+          {filteredProblems.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">No problems found matching your criteria.</p>
+            </div>
+          ) : (
+            filteredProblems.map((category, categoryIndex) => (
             <div
               key={categoryIndex}
               style={{ backgroundColor: 'var(--color-dark-card)', borderColor: 'var(--color-dark-border)' }}
@@ -207,7 +253,8 @@ const Dashboard = () => {
 
                             {/* Solution */}
                             <div className="space-y-2">
-                              <h4 className="text-lg font-semibold text-white flex items-center gap-2">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-lg font-semibold text-white flex items-center gap-2">
                                 <svg
                                   className="w-5 h-5 text-blue-400"
                                   fill="none"
@@ -223,6 +270,27 @@ const Dashboard = () => {
                                 </svg>
                                 Python Solution
                               </h4>
+                              <button
+                                onClick={() => copyCode(problem.pythonSolution, problemId)}
+                                className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm transition-colors flex items-center gap-2"
+                              >
+                                {copiedId === problemId ? (
+                                  <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Copied!
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                    Copy Code
+                                  </>
+                                )}
+                              </button>
+                              </div>
                               <div className="code-block rounded-lg overflow-hidden">
                                 <pre className="language-python">
                                   <code className="language-python">
@@ -239,7 +307,8 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-          ))}
+          ))
+          )}
         </div>
       </main>
 
