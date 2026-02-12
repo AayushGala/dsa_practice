@@ -2,20 +2,26 @@ import React, { useState, useRef, useEffect } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
-import { getProblemStatus, setProblemStatus, problemStatus } from './utils/storageUtils';
+import { getProblemStatus, setProblemStatus, problemStatus, getCardPosition, setCardPosition } from './utils/storageUtils';
 
 const CardView = ({ filteredProblems }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const savedPosition = getCardPosition();
+  const [currentIndex, setCurrentIndex] = useState(savedPosition.currentIndex);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [copiedId, setCopiedId] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(savedPosition.selectedCategory);
   const [showCategories, setShowCategories] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
     Prism.highlightAll();
   }, [currentIndex]);
+
+  // Save card position whenever it changes
+  useEffect(() => {
+    setCardPosition(currentIndex, selectedCategory);
+  }, [currentIndex, selectedCategory]);
 
   // Handle keyboard navigation
   useEffect(() => {

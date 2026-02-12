@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { dsaProblems } from './data/problems';
 import CardView from './CardView';
-import { getProblemStatus, setProblemStatus, problemStatus } from './utils/storageUtils';
+import { getProblemStatus, setProblemStatus, problemStatus, getViewMode, setViewMode } from './utils/storageUtils';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
@@ -14,7 +14,13 @@ const Dashboard = () => {
   const [difficultyFilter, setDifficultyFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [copiedId, setCopiedId] = useState(null);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'card'
+  const [viewMode, setViewModeState] = useState(() => getViewMode()); // 'list' or 'card'
+
+  // Save view mode to localStorage whenever it changes
+  const handleViewModeChange = (mode) => {
+    setViewModeState(mode);
+    setViewMode(mode);
+  };
 
   useEffect(() => {
     Prism.highlightAll();
@@ -149,7 +155,7 @@ const Dashboard = () => {
               </div>
             </div>
             <button
-              onClick={() => setViewMode(viewMode === 'list' ? 'card' : 'list')}
+              onClick={() => handleViewModeChange(viewMode === 'list' ? 'card' : 'list')}
               className="btn-secondary"
               title={viewMode === 'list' ? 'Switch to Card View' : 'Switch to List View'}
             >

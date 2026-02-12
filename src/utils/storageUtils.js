@@ -1,6 +1,7 @@
 // localStorage utility for managing problem status
 
 const STORAGE_KEY = 'dsa_tracker_problems';
+const VIEW_MODE_KEY = 'dsa_tracker_view_mode';
 
 export const problemStatus = {
   TODO: 'todo',
@@ -48,6 +49,37 @@ export const getProblemsWithStatus = (dsaProblems, status) => {
 };
 
 // Get all statuses
+
+// Get saved view mode preference
+export const getViewMode = () => {
+  return localStorage.getItem(VIEW_MODE_KEY) || 'list';
+};
+
+// Set view mode preference
+export const setViewMode = (mode) => {
+  localStorage.setItem(VIEW_MODE_KEY, mode);
+};
+
+// Card view position storage
+const CARD_POSITION_KEY = 'dsa_tracker_card_position';
+
+// Get saved card position
+export const getCardPosition = () => {
+  const saved = localStorage.getItem(CARD_POSITION_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return { currentIndex: 0, selectedCategory: null };
+    }
+  }
+  return { currentIndex: 0, selectedCategory: null };
+};
+
+// Set card position
+export const setCardPosition = (currentIndex, selectedCategory) => {
+  localStorage.setItem(CARD_POSITION_KEY, JSON.stringify({ currentIndex, selectedCategory }));
+};
 export const getAllProblemStatuses = (dsaProblems) => {
   const statuses = {};
   dsaProblems.forEach((category) => {
