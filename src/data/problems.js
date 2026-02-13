@@ -108,7 +108,22 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug",
         "leetcodeLink": null,
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `class Solution:
+    def findNumbers(self, nums: List[int]) -> int:
+        def count_digits(num):
+            count = 0
+            while num > 0:
+                count += 1
+                num = num // 10
+            return count
+        
+        ans = 0
+        for n in nums:
+            count = count_digits(n)
+            if count % 2 == 0:
+                ans += 1
+        return ans`
       },
       {
         "name": "Reverse a number",
@@ -116,7 +131,14 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug?t=930",
         "leetcodeLink": "https://leetcode.com/problems/reverse-integer/",
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `class Solution:
+    def reverseNumber(self, n):
+        ans = 0
+        while n > 0:
+            ans = (ans * 10) + (n % 10)
+            n = n // 10
+        return ans`
       },
       {
         "name": "Palindrome Number",
@@ -124,7 +146,20 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug?t=1230",
         "leetcodeLink": "https://leetcode.com/problems/palindrome-number/",
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `class Solution:
+    def isPalindrome(self, x: int) -> bool:
+        if x < 0:
+            return False
+        
+        x_copy = x
+        reverse = 0
+        
+        while x > 0:
+            reverse = (reverse * 10) + (x % 10)
+            x //= 10
+        
+        return reverse == x_copy`
       },
       {
         "name": "GCD of Two Numbers",
@@ -132,7 +167,39 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug?t=2684",
         "leetcodeLink": null,
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `# Solution 1: Iterative approach
+def gcd(a, b):
+
+    # Find Minimum of a and b
+    result = min(a, b)
+
+    while result > 0:
+        if a % result == 0 and b % result == 0:
+            break
+        result -= 1
+
+    # Return gcd of a and b
+    return result
+
+
+# Solution 2: Euclidean algorithm (Recursive)
+def gcd(a, b):
+  
+    # Everything divides 0
+    if a == 0:
+        return b
+    if b == 0:
+        return a
+
+    # Base case
+    if a == b:
+        return a
+
+    # a is greater
+    if a > b:
+        return gcd(a - b, b)
+    return gcd(a, b - a)`
       },
       {
         "name": "Check if the Number is Armstrong",
@@ -140,7 +207,15 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug?t=1418",
         "leetcodeLink": "https://leetcode.com/problems/armstrong-number/",
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `class Solution:
+    def isArmstrong(self, n: int) -> bool:
+        k = len(str(n))
+        s, x = 0, n
+        while x:
+            s += (x % 10) ** k
+            x //= 10
+        return s == n`
       },
       {
         "name": "Print all Divisors",
@@ -148,7 +223,20 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug?t=1580",
         "leetcodeLink": null,
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `def printDivisors(n):
+    i = 1
+    # Print all divisors from 1 (inclusive) to √n (exclusive)
+    while i * i < n:
+        if n % i == 0:
+            print(i)
+        i += 1
+    
+    # Print all divisors from √n (inclusive) to n (inclusive)
+    while i >= 1:
+        if n % i == 0:
+            print(n // i)
+        i -= 1`
       },
       {
         "name": "Check for Prime Number",
@@ -156,7 +244,22 @@ export const dsaProblems = [
         "youtubeLink": "https://youtu.be/1xNbjMdbjug?t=2381",
         "leetcodeLink": null,
         "difficulty": "Easy",
-        "subsection": "Know Basic Maths"
+        "subsection": "Know Basic Maths",
+        "pythonSolution": `def isPrime(n):
+    if n == 1:
+        return False
+    if n == 2 or n == 3:
+        return True
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+    
+    i = 5
+    while i * i <= n:
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+        i += 6
+    
+    return True`
       },
       {
         "name": "Understand recursion by print something N times",
