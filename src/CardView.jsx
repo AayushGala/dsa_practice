@@ -50,9 +50,13 @@ const CardView = forwardRef(({ filteredProblems }, ref) => {
   };
 
   const handleTouchStart = (e) => {
-    // Don't track swipes on interactive elements
+    // Don't track swipes on interactive elements or scrollable code blocks
     const target = e.target;
     if (target.tagName === 'A' || target.tagName === 'BUTTON' || target.closest('button') || target.closest('a')) {
+      return;
+    }
+    // Check if touch is within a no-swipe zone (solution section)
+    if (target.closest('[data-no-swipe="true"]')) {
       return;
     }
     setTouchStart(e.targetTouches[0].clientX);
@@ -398,7 +402,7 @@ const CardView = forwardRef(({ filteredProblems }, ref) => {
           </div>
 
           {/* Solution */}
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-3" data-no-swipe="true">
             <div className="flex items-center gap-2">
               <h4 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
                 <svg
