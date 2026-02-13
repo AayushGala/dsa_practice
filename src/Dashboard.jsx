@@ -408,29 +408,46 @@ const Dashboard = () => {
                             </div>
 
                             {/* Links */}
-                            <div className="flex flex-col sm:flex-row gap-3">
-                              <a
-                                href={problem.youtubeLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm"
-                              >
-                                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                </svg>
-                                <span>YouTube</span>
-                              </a>
-                              <a
-                                href={problem.leetcodeLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 active:bg-gray-500 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm"
-                              >
-                                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                                </svg>
-                                <span>Practice</span>
-                              </a>
+                            <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                              {problem.takeuforwardLink && (
+                                <a
+                                  href={problem.takeuforwardLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm border border-gray-700"
+                                >
+                                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                  </svg>
+                                  <span>Article</span>
+                                </a>
+                              )}
+                              {problem.youtubeLink && (
+                                <a
+                                  href={problem.youtubeLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm border border-gray-700"
+                                >
+                                  <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                  </svg>
+                                  <span>YouTube</span>
+                                </a>
+                              )}
+                              {problem.leetcodeLink && (
+                                <a
+                                  href={problem.leetcodeLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 px-5 py-3 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white rounded-lg transition-all hover:shadow-lg active:scale-95 font-semibold text-sm border border-gray-700"
+                                >
+                                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                                  </svg>
+                                  <span>Practice</span>
+                                </a>
+                              )}
                             </div>
 
                             {/* Solution */}
@@ -442,33 +459,41 @@ const Dashboard = () => {
                                   </svg>
                                   Python Solution
                                 </h4>
-                                <button
-                                  onClick={() => copyCode(problem.pythonSolution, problemId)}
-                                  className="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
-                                >
-                                  {copiedId === problemId ? (
-                                    <>
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                      </svg>
-                                      Copied!
-                                    </>
-                                  ) : (
-                                    <>
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                      </svg>
-                                      Copy Code
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                              <div className="code-block rounded-xl overflow-x-auto border border-gray-700/50" style={{ boxShadow: '0 4px 20px rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.08)' }}>
-                                <pre className="language-python">
-                                  <code className="language-python">
-                                    {problem.pythonSolution}
-                                  </code>
-                                </pre>
+                                {problem.pythonSolution ? (
+                                  <>
+                                    <button
+                                      onClick={() => copyCode(problem.pythonSolution, problemId)}
+                                      className="w-full px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                      {copiedId === problemId ? (
+                                        <>
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                          Copied!
+                                        </>
+                                      ) : (
+                                        <>
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                          </svg>
+                                          Copy Code
+                                        </>
+                                      )}
+                                    </button>
+                                    <div className="code-block rounded-xl overflow-x-auto border border-gray-700/50 mt-3" style={{ boxShadow: '0 4px 20px rgba(255, 255, 255, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.08)' }}>
+                                      <pre className="language-python">
+                                        <code className="language-python">
+                                          {problem.pythonSolution}
+                                        </code>
+                                      </pre>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="rounded-lg border border-dashed border-gray-700 p-8 text-center">
+                                    <p className="text-gray-500 text-sm">Solution code will be added soon</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
